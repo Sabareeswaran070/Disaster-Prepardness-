@@ -11,11 +11,12 @@ client = Groq(
 def generate_response(
     system_prompt: str,
     user_prompt: str,
+    json_mode: bool = False,
 ) -> str:
 
-    response = client.chat.completions.create(
-        model=settings.GROQ_MODEL,
-        messages=[
+    request = {
+        "model": settings.GROQ_MODEL,
+        "messages": [
             {
                 "role": "system",
                 "content": system_prompt,
@@ -25,8 +26,25 @@ def generate_response(
                 "content": user_prompt,
             },
         ],
-        temperature=0.3,
-        max_tokens=1500,
+        "temperature": 0.2,
+        "max_tokens": 2000,
+    }
+
+    if json_mode:
+
+        request["response_format"] = {
+            "type": "json_object"
+        }
+
+    response = client.chat.completions.create(
+        **request
     )
 
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content
+
+    if not content:
+        raise ValueError(
+            "Groq returned an empty response"
+        )
+
+    return content.strip()
