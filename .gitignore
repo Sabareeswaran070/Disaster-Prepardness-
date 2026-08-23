@@ -1,0 +1,103 @@
+# ==========================================
+# FRONTEND - React / Vite / TypeScript
+# ==========================================
+
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Frontend environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Vite
+frontend/.vite/
+
+# TypeScript
+frontend/*.tsbuildinfo
+frontend/**/*.tsbuildinfo
+
+# Frontend logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Frontend testing
+frontend/coverage/
+
+
+# ==========================================
+# BACKEND - Python / FastAPI
+# ==========================================
+
+backend/venv/
+backend/.venv/
+backend/env/
+
+# Python cache
+backend/**/__pycache__/
+backend/**/*.py[cod]
+backend/**/*.pyo
+
+# Python environment / secrets
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Python logs
+backend/logs/
+backend/**/*.log
+
+# Testing / type checking caches
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+
+# Local databases
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# Temporary files
+backend/temp/
+backend/tmp/
+
+# Python packaging
+backend/**/*.egg-info/
+backend/dist/
+backend/build/
+
+
+# ==========================================
+# UPLOADED FILES
+# ==========================================
+
+backend/uploads/
+
+
+# ==========================================
+# IDE
+# ==========================================
+
+.vscode/
+.idea/
+
+
+# ==========================================
+# OPERATING SYSTEM
+# ==========================================
+
+.DS_Store
+Thumbs.db
+
+
+# ==========================================
+# GENERAL TEMPORARY FILES
+# ==========================================
+
+*.tmp
+*.temp
