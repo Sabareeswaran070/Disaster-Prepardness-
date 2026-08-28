@@ -14,6 +14,8 @@ export interface SimulationScenario {
     scenario_order: number;
     situation: string;
     choices: string;
+    correct_choice: string;
+    explanation: string | null;
     points: number;
 }
 
@@ -38,4 +40,17 @@ export interface SimulationResult {
     percentage: number;
     completed: boolean;
     responses_saved: number;
+}
+
+export interface SimulationCreate {
+    disaster_id: number;
+    title: string;
+    description?: string | null;
+    difficulty?: string;
+}
+
+export interface SimulationUpdate {
+    title?: string;
+    description?: string | null;
+    difficulty?: string;
 }

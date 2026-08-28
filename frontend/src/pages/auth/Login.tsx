@@ -73,7 +73,7 @@ const Login = () => {
 
                 <div className="mb-8 text-center">
                     <h1 className="text-3xl font-bold text-slate-900">
-                        DisasterEdu
+                        Disaster Educational's
                     </h1>
 
                     <p className="mt-2 text-sm text-slate-500">

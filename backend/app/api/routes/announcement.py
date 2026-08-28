@@ -43,6 +43,29 @@ CONTENT_ROLES = (
     "ADMIN",
     "INSTITUTION_ADMIN",
 )
+# ============================================================
+# List Announcements for Management
+# ADMIN / INSTITUTION_ADMIN
+# ============================================================
+
+@router.get(
+    "/manage",
+    response_model=list[AnnouncementResponse],
+)
+def list_manage_announcements(
+    disaster_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles(*CONTENT_ROLES)
+    ),
+):
+
+    return get_announcements(
+        db=db,
+        disaster_id=disaster_id,
+        current_user_role=None,
+        published_only=False,
+    )
 
 
 # ============================================================

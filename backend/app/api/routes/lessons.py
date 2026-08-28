@@ -75,6 +75,31 @@ def list_lessons(
         published_only=True,
     )
 
+# ============================================================
+# Admin / Content Management — List All Lessons
+# ============================================================
+
+@router.get(
+    "/manage",
+    response_model=list[LessonResponse],
+)
+def list_manage_lessons(
+    disaster_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles(
+            "ADMIN",
+            "INSTITUTION_ADMIN",
+            "FACULTY",
+        )
+    ),
+):
+
+    return get_lessons(
+        db=db,
+        disaster_id=disaster_id,
+        published_only=False,
+    )
 
 @router.get(
     "/{lesson_id}",

@@ -1,0 +1,891 @@
+import {
+    useEffect,
+    useState,
+    type FormEvent,
+} from "react";
+
+import {
+    AlertTriangle,
+    Bell,
+    Check,
+    Edit,
+    Eye,
+    EyeOff,
+    Plus,
+    Trash2,
+    X,
+} from "lucide-react";
+
+import {
+    createAnnouncement,
+    deleteAnnouncement,
+    getAdminAnnouncements,
+    publishAnnouncement,
+    unpublishAnnouncement,
+    updateAnnouncement,
+} from "../../api/announcements";
+
+import {
+    getDisasters,
+} from "../../api/disasters";
+
+import type {
+    Announcement,
+    AnnouncementCreate,
+} from "../../types/announcement";
+
+import type {
+    Disaster,
+} from "../../types/disaster";
+
+
+const emptyForm: AnnouncementCreate = {
+    disaster_id: null,
+    title: "",
+    message: "",
+    priority: "NORMAL",
+    target_role: "ALL",
+};
+
+
+const AdminAnnouncements = () => {
+
+    const [announcements, setAnnouncements] =
+        useState<Announcement[]>([]);
+
+    const [disasters, setDisasters] =
+        useState<Disaster[]>([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [saving, setSaving] =
+        useState(false);
+
+    const [error, setError] =
+        useState<string | null>(null);
+
+    const [showForm, setShowForm] =
+        useState(false);
+
+    const [editingId, setEditingId] =
+        useState<number | null>(null);
+
+    const [form, setForm] =
+        useState<AnnouncementCreate>({
+            ...emptyForm,
+        });
+
+
+    const loadData = async () => {
+
+        try {
+
+            setLoading(true);
+            setError(null);
+
+            const [
+                announcementData,
+                disasterData,
+            ] = await Promise.all([
+                getAdminAnnouncements(),
+                getDisasters(),
+            ]);
+
+            setAnnouncements(
+                announcementData
+            );
+
+            setDisasters(
+                disasterData
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Failed to load announcement data:",
+                err
+            );
+
+            setError(
+                "Failed to load announcements."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+
+    useEffect(() => {
+
+        loadData();
+
+    }, []);
+
+
+    const resetForm = () => {
+
+        setForm({
+            ...emptyForm,
+        });
+
+        setEditingId(null);
+        setShowForm(false);
+    };
+
+
+    const handleSubmit =
+        async (
+            event: FormEvent
+        ) => {
+
+            event.preventDefault();
+
+            if (
+                !form.title.trim() ||
+                !form.message.trim()
+            ) {
+
+                setError(
+                    "Title and message are required."
+                );
+
+                return;
+            }
+
+            try {
+
+                setSaving(true);
+                setError(null);
+
+                if (editingId !== null) {
+
+                    await updateAnnouncement(
+                        editingId,
+                        {
+                            ...form,
+                        }
+                    );
+
+                } else {
+
+                    await createAnnouncement(
+                        {
+                            ...form,
+                        }
+                    );
+                }
+
+                resetForm();
+
+                await loadData();
+
+            } catch (err) {
+
+                console.error(
+                    "Failed to save announcement:",
+                    err
+                );
+
+                setError(
+                    "Failed to save announcement."
+                );
+
+            } finally {
+
+                setSaving(false);
+
+            }
+        };
+
+
+    const handleEdit =
+        (
+            announcement: Announcement
+        ) => {
+
+            setForm({
+                disaster_id:
+                    announcement.disaster_id,
+
+                title:
+                    announcement.title,
+
+                message:
+                    announcement.message,
+
+                priority:
+                    announcement.priority,
+
+                target_role:
+                    announcement.target_role,
+            });
+
+            setEditingId(
+                announcement.id
+            );
+
+            setShowForm(true);
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+        };
+
+
+    const handlePublishToggle =
+        async (
+            announcement: Announcement
+        ) => {
+
+            try {
+
+                setError(null);
+
+                if (
+                    announcement.is_published
+                ) {
+
+                    await unpublishAnnouncement(
+                        announcement.id
+                    );
+
+                } else {
+
+                    await publishAnnouncement(
+                        announcement.id
+                    );
+                }
+
+                await loadData();
+
+            } catch (err) {
+
+                console.error(
+                    "Failed to change announcement status:",
+                    err
+                );
+
+                setError(
+                    "Failed to change announcement status."
+                );
+            }
+        };
+
+
+    const handleDelete =
+        async (
+            announcement: Announcement
+        ) => {
+
+            const confirmed =
+                window.confirm(
+                    `Delete "${announcement.title}"?`
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                setError(null);
+
+                await deleteAnnouncement(
+                    announcement.id
+                );
+
+                await loadData();
+
+            } catch (err) {
+
+                console.error(
+                    "Failed to delete announcement:",
+                    err
+                );
+
+                setError(
+                    "Failed to delete announcement."
+                );
+            }
+        };
+
+
+    const getDisasterName =
+        (
+            disasterId: number | null
+        ) => {
+
+            if (!disasterId) {
+                return "All Disasters";
+            }
+
+            return (
+                disasters.find(
+                    (disaster) =>
+                        disaster.id ===
+                        disasterId
+                )?.name ??
+                `Disaster #${disasterId}`
+            );
+        };
+
+
+    return (
+        <div className="min-h-full bg-slate-50 p-6 lg:p-8">
+
+            {/* Header */}
+
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                <div className="flex items-center gap-4">
+
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+
+                        <Bell size={28} />
+
+                    </div>
+
+                    <div>
+
+                        <h1 className="text-3xl font-bold text-slate-900">
+                            Announcements
+                        </h1>
+
+                        <p className="mt-1 text-slate-500">
+                            Create and manage disaster preparedness announcements.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    onClick={() => {
+
+                        if (showForm) {
+                            resetForm();
+                        } else {
+                            setShowForm(true);
+                            setError(null);
+                        }
+
+                    }}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                >
+
+                    {showForm ? (
+                        <>
+                            <X size={18} />
+                            Cancel
+                        </>
+                    ) : (
+                        <>
+                            <Plus size={18} />
+                            New Announcement
+                        </>
+                    )}
+
+                </button>
+
+            </div>
+
+
+            {/* Error */}
+
+            {error && (
+
+                <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+
+                    <AlertTriangle
+                        size={20}
+                        className="shrink-0"
+                    />
+
+                    <span>
+                        {error}
+                    </span>
+
+                </div>
+
+            )}
+
+
+            {/* Create / Edit Form */}
+
+            {showForm && (
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                >
+
+                    <div className="mb-6">
+
+                        <h2 className="text-xl font-bold text-slate-900">
+
+                            {editingId !== null
+                                ? "Edit Announcement"
+                                : "Create Announcement"}
+
+                        </h2>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                            New announcements are created as drafts.
+                        </p>
+
+                    </div>
+
+
+                    <div className="grid gap-5 md:grid-cols-2">
+
+                        {/* Title */}
+
+                        <div className="md:col-span-2">
+
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                Title
+                            </label>
+
+                            <input
+                                type="text"
+                                value={form.title}
+                                onChange={(event) =>
+                                    setForm({
+                                        ...form,
+                                        title:
+                                            event.target.value,
+                                    })
+                                }
+                                placeholder="Example: Earthquake Drill Tomorrow"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            />
+
+                        </div>
+
+
+                        {/* Message */}
+
+                        <div className="md:col-span-2">
+
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                Message
+                            </label>
+
+                            <textarea
+                                rows={5}
+                                value={form.message}
+                                onChange={(event) =>
+                                    setForm({
+                                        ...form,
+                                        message:
+                                            event.target.value,
+                                    })
+                                }
+                                placeholder="Write the announcement message..."
+                                className="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            />
+
+                        </div>
+
+
+                        {/* Priority */}
+
+                        <div>
+
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                Priority
+                            </label>
+
+                            <select
+                                value={form.priority}
+                                onChange={(event) =>
+                                    setForm({
+                                        ...form,
+                                        priority:
+                                            event.target.value,
+                                    })
+                                }
+                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+
+                                <option value="LOW">
+                                    Low
+                                </option>
+
+                                <option value="NORMAL">
+                                    Normal
+                                </option>
+
+                                <option value="HIGH">
+                                    High
+                                </option>
+
+                                <option value="CRITICAL">
+                                    Critical
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        {/* Target Role */}
+
+                        <div>
+
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                Target Role
+                            </label>
+
+                            <select
+                                value={form.target_role}
+                                onChange={(event) =>
+                                    setForm({
+                                        ...form,
+                                        target_role:
+                                            event.target.value,
+                                    })
+                                }
+                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+
+                                <option value="ALL">
+                                    All Users
+                                </option>
+
+                                <option value="STUDENT">
+                                    Students
+                                </option>
+
+                                <option value="FACULTY">
+                                    Faculty
+                                </option>
+
+                                <option value="INSTITUTION_ADMIN">
+                                    Institution Admin
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        {/* Disaster */}
+
+                        <div>
+
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                Disaster
+                            </label>
+
+                            <select
+                                value={
+                                    form.disaster_id ?? ""
+                                }
+                                onChange={(event) =>
+                                    setForm({
+                                        ...form,
+                                        disaster_id:
+                                            event.target.value
+                                                ? Number(
+                                                    event.target.value
+                                                )
+                                                : null,
+                                    })
+                                }
+                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+
+                                <option value="">
+                                    All Disasters
+                                </option>
+
+                                {disasters.map(
+                                    (disaster) => (
+
+                                        <option
+                                            key={disaster.id}
+                                            value={disaster.id}
+                                        >
+                                            {disaster.name}
+                                        </option>
+
+                                    )
+                                )}
+
+                            </select>
+
+                            <p className="mt-2 text-xs text-slate-500">
+                                Select a specific disaster or leave it as All Disasters.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* Form Buttons */}
+
+                    <div className="mt-6 flex justify-end gap-3">
+
+                        <button
+                            type="button"
+                            onClick={resetForm}
+                            className="rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+
+                            <Check size={18} />
+
+                            {saving
+                                ? "Saving..."
+                                : editingId !== null
+                                    ? "Update Announcement"
+                                    : "Create Draft"}
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            )}
+
+
+            {/* Announcement List */}
+
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+                <div className="border-b border-slate-200 p-5">
+
+                    <h2 className="text-xl font-bold text-slate-900">
+                        All Announcements
+                    </h2>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                        Manage published and draft announcements.
+                    </p>
+
+                </div>
+
+
+                {loading ? (
+
+                    <div className="p-10 text-center text-slate-500">
+                        Loading announcements...
+                    </div>
+
+                ) : announcements.length === 0 ? (
+
+                    <div className="p-10 text-center">
+
+                        <Bell
+                            size={40}
+                            className="mx-auto text-slate-300"
+                        />
+
+                        <h3 className="mt-4 font-semibold text-slate-700">
+                            No announcements
+                        </h3>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                            Create your first announcement.
+                        </p>
+
+                    </div>
+
+                ) : (
+
+                    <div className="divide-y divide-slate-200">
+
+                        {announcements.map(
+                            (announcement) => (
+
+                                <div
+                                    key={
+                                        announcement.id
+                                    }
+                                    className="p-5"
+                                >
+
+                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+
+                                        <div className="min-w-0 flex-1">
+
+                                            <div className="flex flex-wrap items-center gap-2">
+
+                                                <h3 className="text-lg font-bold text-slate-900">
+                                                    {
+                                                        announcement.title
+                                                    }
+                                                </h3>
+
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                                                        announcement.priority ===
+                                                        "CRITICAL"
+                                                            ? "bg-red-100 text-red-700"
+                                                            : announcement.priority ===
+                                                                "HIGH"
+                                                                ? "bg-orange-100 text-orange-700"
+                                                                : announcement.priority ===
+                                                                    "NORMAL"
+                                                                    ? "bg-blue-100 text-blue-700"
+                                                                    : "bg-slate-100 text-slate-600"
+                                                    }`}
+                                                >
+                                                    {
+                                                        announcement.priority
+                                                    }
+                                                </span>
+
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                                                        announcement.is_published
+                                                            ? "bg-green-100 text-green-700"
+                                                            : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                                >
+                                                    {
+                                                        announcement.is_published
+                                                            ? "PUBLISHED"
+                                                            : "DRAFT"
+                                                    }
+                                                </span>
+
+                                            </div>
+
+
+                                            <p className="mt-2 text-sm text-slate-500">
+
+                                                Target:
+                                                {" "}
+                                                <span className="font-semibold text-slate-700">
+                                                    {
+                                                        announcement.target_role
+                                                    }
+                                                </span>
+
+                                                {" • "}
+
+                                                Disaster:
+                                                {" "}
+                                                <span className="font-semibold text-slate-700">
+                                                    {
+                                                        getDisasterName(
+                                                            announcement.disaster_id
+                                                        )
+                                                    }
+                                                </span>
+
+                                            </p>
+
+
+                                            <div className="mt-4 whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-slate-700">
+                                                {
+                                                    announcement.message
+                                                }
+                                            </div>
+
+                                        </div>
+
+
+                                        <div className="flex flex-wrap gap-2">
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleEdit(
+                                                        announcement
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                            >
+
+                                                <Edit size={16} />
+
+                                                Edit
+
+                                            </button>
+
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handlePublishToggle(
+                                                        announcement
+                                                    )
+                                                }
+                                                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${
+                                                    announcement.is_published
+                                                        ? "border border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                                        : "border border-green-300 text-green-700 hover:bg-green-50"
+                                                }`}
+                                            >
+
+                                                {announcement.is_published ? (
+                                                    <>
+                                                        <EyeOff size={16} />
+                                                        Unpublish
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Eye size={16} />
+                                                        Publish
+                                                    </>
+                                                )}
+
+                                            </button>
+
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleDelete(
+                                                        announcement
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                                            >
+
+                                                <Trash2 size={16} />
+
+                                                Delete
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            )
+                        )}
+
+                    </div>
+
+                )}
+
+            </div>
+
+        </div>
+    );
+};
+
+
+export default AdminAnnouncements;

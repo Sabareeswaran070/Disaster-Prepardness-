@@ -79,6 +79,30 @@ def list_published_quizzes(
         lesson_id=lesson_id,
     )
 @router.get(
+    "/manage",
+    response_model=list[QuizResponse],
+)
+def list_manage_quizzes(
+    disaster_id: int | None = None,
+    lesson_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles(
+            "ADMIN",
+            "INSTITUTION_ADMIN",
+            "FACULTY",
+        )
+    ),
+):
+
+    return get_quizzes(
+        db=db,
+        published_only=False,
+        disaster_id=disaster_id,
+        lesson_id=lesson_id,
+    )
+
+@router.get(
     "/{quiz_id}/admin",
     response_model=AdminQuizDetailResponse,
 )

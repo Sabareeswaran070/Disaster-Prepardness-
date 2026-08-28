@@ -70,6 +70,33 @@ def list_simulations(
         disaster_id=disaster_id,
     )
 
+# =========================
+# Admin Simulation List
+# IMPORTANT: before /{simulation_id}
+# =========================
+
+@router.get(
+    "/manage",
+    response_model=list[SimulationResponse],
+)
+def list_admin_simulations(
+    disaster_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles(
+            "ADMIN",
+            "INSTITUTION_ADMIN",
+            "FACULTY",
+        )
+    ),
+):
+
+    return get_simulations(
+        db=db,
+        published_only=False,
+        disaster_id=disaster_id,
+    )
+
 
 # =========================
 # Admin Simulation Detail

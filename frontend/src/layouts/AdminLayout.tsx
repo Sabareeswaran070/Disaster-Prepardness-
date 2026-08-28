@@ -1,14 +1,16 @@
 import {
+    Bell,
     BookOpen,
     Brain,
+    Building2,
     ClipboardCheck,
     Home,
     LogOut,
+    Menu,
     Megaphone,
     ShieldAlert,
-    UserCircle,
+    Users,
     X,
-    Menu,
 } from "lucide-react";
 
 import {
@@ -22,53 +24,68 @@ import {
 
 import { useAuth } from "../context/AuthContext";
 
-const StudentLayout = () => {
-    const { user, logout } = useAuth();
 
-    const [sidebarOpen, setSidebarOpen] =
-        useState(false);
+const AdminLayout = () => {
+
+    const {
+        user,
+        logout,
+    } = useAuth();
+
+    const [
+        sidebarOpen,
+        setSidebarOpen,
+    ] = useState(false);
+
 
     const navigation = [
         {
             name: "Dashboard",
-            path: "/student/dashboard",
+            path: "/admin/dashboard",
             icon: Home,
         },
         {
+            name: "Disasters",
+            path: "/admin/disasters",
+            icon: ShieldAlert,
+        },
+        {
             name: "Lessons",
-            path: "/student/lessons",
+            path: "/admin/lessons",
             icon: BookOpen,
         },
         {
             name: "Quizzes",
-            path: "/student/quizzes",
+            path: "/admin/quizzes",
             icon: ClipboardCheck,
         },
         {
             name: "Simulations",
-            path: "/student/simulations",
-            icon: Brain,
-        },
-        {
-            name: "AI Tutor",
-            path: "/student/ai-tutor",
+            path: "/admin/simulations",
             icon: Brain,
         },
         {
             name: "Emergency",
-            path: "/student/emergency",
-            icon: ShieldAlert,
+            path: "/admin/emergencies",
+            icon: Bell,
         },
         {
             name: "Announcements",
-            path: "/student/announcements",
+            path: "/admin/announcements",
             icon: Megaphone,
+        },
+        {
+            name: "Institutions",
+            path: "/admin/institutions",
+            icon: Building2,
+        },
+        {
+            name: "Users",
+            path: "/admin/users",
+            icon: Users,
         },
     ];
 
-    const handleLogout = () => {
-        logout();
-    };
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -78,6 +95,7 @@ const StudentLayout = () => {
             <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between border-b bg-white px-4 lg:hidden">
 
                 <button
+                    type="button"
                     onClick={() =>
                         setSidebarOpen(true)
                     }
@@ -87,7 +105,7 @@ const StudentLayout = () => {
                 </button>
 
                 <h1 className="font-bold text-slate-900">
-                    Disaster Educational's
+                    DisasterEdu Admin
                 </h1>
 
                 <div className="w-10" />
@@ -95,7 +113,7 @@ const StudentLayout = () => {
             </header>
 
 
-            {/* Mobile Overlay */}
+            {/* Overlay */}
 
             {sidebarOpen && (
                 <div
@@ -111,16 +129,16 @@ const StudentLayout = () => {
 
             <aside
                 className={`
-          fixed left-0 top-0 z-50
-          flex h-screen w-64 flex-col
-          border-r bg-white
-          transition-transform duration-200
-          lg:translate-x-0
-          ${sidebarOpen
+                    fixed left-0 top-0 z-50
+                    flex h-screen w-64 flex-col
+                    border-r bg-white
+                    transition-transform duration-200
+                    lg:translate-x-0
+                    ${sidebarOpen
                         ? "translate-x-0"
                         : "-translate-x-full"
                     }
-        `}
+                `}
             >
 
                 {/* Logo */}
@@ -129,15 +147,16 @@ const StudentLayout = () => {
 
                     <div>
                         <h1 className="text-xl font-bold text-blue-600">
-                            Disaster Educational's
+                            DisasterEdu
                         </h1>
 
                         <p className="text-xs text-slate-500">
-                            Student Portal
+                            Admin Portal
                         </p>
                     </div>
 
                     <button
+                        type="button"
                         onClick={() =>
                             setSidebarOpen(false)
                         }
@@ -153,25 +172,17 @@ const StudentLayout = () => {
 
                 <div className="border-b px-5 py-5">
 
-                    <div className="flex items-center gap-3">
+                    <p className="truncate font-semibold text-slate-900">
+                        {user?.full_name}
+                    </p>
 
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                            <UserCircle size={24} />
-                        </div>
+                    <p className="truncate text-xs text-slate-500">
+                        {user?.email}
+                    </p>
 
-                        <div className="min-w-0">
-
-                            <p className="truncate font-semibold text-slate-900">
-                                {user?.full_name}
-                            </p>
-
-                            <p className="truncate text-xs text-slate-500">
-                                {user?.email}
-                            </p>
-
-                        </div>
-
-                    </div>
+                    <p className="mt-1 text-xs font-semibold uppercase text-blue-600">
+                        {user?.role}
+                    </p>
 
                 </div>
 
@@ -194,15 +205,15 @@ const StudentLayout = () => {
                                 }
                                 className={({ isActive }) =>
                                     `
-                  flex items-center gap-3
-                  rounded-lg px-4 py-3
-                  text-sm font-medium
-                  transition
-                  ${isActive
+                                    flex items-center gap-3
+                                    rounded-lg px-4 py-3
+                                    text-sm font-medium
+                                    transition
+                                    ${isActive
                                         ? "bg-blue-50 text-blue-600"
                                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                                     }
-                  `
+                                    `
                                 }
                             >
                                 <Icon size={20} />
@@ -219,7 +230,10 @@ const StudentLayout = () => {
                 <div className="border-t p-4">
 
                     <button
-                        onClick={handleLogout}
+                        type="button"
+                        onClick={() =>
+                            logout()
+                        }
                         className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
                     >
                         <LogOut size={20} />
@@ -231,7 +245,7 @@ const StudentLayout = () => {
             </aside>
 
 
-            {/* Main Content */}
+            {/* Main */}
 
             <main className="min-h-screen lg:pl-64">
 
@@ -245,4 +259,5 @@ const StudentLayout = () => {
     );
 };
 
-export default StudentLayout;
+
+export default AdminLayout;

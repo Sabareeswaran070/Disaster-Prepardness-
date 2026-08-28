@@ -87,7 +87,7 @@ const StudentDashboard = () => {
 
                     <div>
                         <h1 className="text-xl font-bold text-slate-900">
-                            DisasterEdu
+                            Disaster Educational's
                         </h1>
 
                         <p className="text-sm text-slate-500">

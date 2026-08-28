@@ -11,6 +11,26 @@ export interface Lesson {
     updated_at: string;
 }
 
+
+export interface LessonCreate {
+    disaster_id: number;
+    title: string;
+    description?: string | null;
+    content?: string | null;
+    difficulty: string;
+    duration_minutes?: number | null;
+}
+
+
+export interface LessonUpdate {
+    title?: string;
+    description?: string | null;
+    content?: string | null;
+    difficulty?: string;
+    duration_minutes?: number | null;
+}
+
+
 export interface LearningMaterial {
     id: number;
     lesson_id: number;
