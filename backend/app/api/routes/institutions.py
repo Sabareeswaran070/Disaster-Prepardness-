@@ -32,16 +32,43 @@ router = APIRouter(
 )
 
 
+# =========================
+# List Institutions
+# =========================
+
 @router.get(
     "",
     response_model=list[InstitutionResponse],
 )
 def list_institutions(
     db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
 ):
 
-    return get_institutions(db)
+    # ADMIN can see all active institutions.
+    if current_user.role == "ADMIN":
+        return get_institutions(db)
 
+    # Other users can only see their own institution.
+    if current_user.institution_id is None:
+        return []
+
+    institution = get_institution_by_id(
+        db,
+        current_user.institution_id,
+    )
+
+    if not institution or not institution.is_active:
+        return []
+
+    return [institution]
+
+
+# =========================
+# Get Institution
+# =========================
 
 @router.get(
     "/{institution_id}",
@@ -50,6 +77,9 @@ def list_institutions(
 def get_institution(
     institution_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
 ):
 
     institution = get_institution_by_id(
@@ -66,8 +96,28 @@ def get_institution(
             detail="Institution not found",
         )
 
+    # ADMIN can access any institution.
+    if current_user.role == "ADMIN":
+        return institution
+
+    # Other users can only access
+    # their own institution.
+    if (
+        current_user.institution_id is None
+        or institution.id
+        != current_user.institution_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot access this institution",
+        )
+
     return institution
 
+
+# =========================
+# Create Institution
+# =========================
 
 @router.post(
     "",
@@ -96,6 +146,10 @@ def create_new_institution(
             detail=str(error),
         )
 
+
+# =========================
+# Update Institution
+# =========================
 
 @router.put(
     "/{institution_id}",
@@ -127,6 +181,10 @@ def update_existing_institution(
         data,
     )
 
+
+# =========================
+# Deactivate Institution
+# =========================
 
 @router.delete(
     "/{institution_id}",

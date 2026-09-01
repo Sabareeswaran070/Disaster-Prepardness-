@@ -25,6 +25,10 @@ import ProtectedRoute from "./ProtectedRoute";
 import RoleProtectedRoute from "./RoleProtectedRoute";
 import AdminSimulations from "../pages/admin/AdminSimulations";
 import StudentLayout from "../layouts/StudentLayout";
+import FacultyLayout from "../layouts/FacultyLayout";
+import FacultyDashboard from "../pages/faculty/FacultyDashboard";
+import FacultyStudents from "../pages/faculty/FacultyStudents";
+import FacultyAnalytics from "../pages/faculty/FacultyAnalytics";
 import AdminDisasters from "../pages/admin/AdminDisasters";
 import AdminLessons from "../pages/admin/AdminLessons";
 import AdminQuizzes from "../pages/admin/AdminQuizzes";
@@ -32,19 +36,8 @@ import AdminEmergencies from "../pages/admin/AdminEmergencies";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminInstitutions from "../pages/admin/AdminInstitutions";
 
-const FacultyDashboard = () => {
-    return (
-        <div className="p-8">
-            <h1 className="text-3xl font-bold text-slate-900">
-                Faculty Dashboard
-            </h1>
 
-            <p className="mt-2 text-slate-500">
-                Faculty dashboard module.
-            </p>
-        </div>
-    );
-};
+
 
 
 const AppRoutes = () => {
@@ -141,6 +134,10 @@ const AppRoutes = () => {
                     FACULTY ROUTES
                 ===================================== */}
 
+                {/* =====================================
+    FACULTY ROUTES
+===================================== */}
+
                 <Route
                     element={
                         <RoleProtectedRoute
@@ -149,10 +146,42 @@ const AppRoutes = () => {
                     }
                 >
 
-                    <Route
-                        path="/faculty/dashboard"
-                        element={<FacultyDashboard />}
-                    />
+                    <Route element={<FacultyLayout />}>
+
+                        <Route
+                            path="/faculty/dashboard"
+                            element={<FacultyDashboard />}
+                        />
+
+                        <Route
+                            path="/faculty/lessons"
+                            element={<AdminLessons />}
+                        />
+
+                        <Route
+                            path="/faculty/quizzes"
+                            element={<AdminQuizzes />}
+                        />
+
+                        <Route
+                            path="/faculty/simulations"
+                            element={<AdminSimulations />}
+                        />
+
+                        <Route
+                            path="/faculty/announcements"
+                            element={<AdminAnnouncements />}
+                        />
+                        <Route
+                            path="/faculty/students"
+                            element={<FacultyStudents />}
+                        />
+
+                        <Route
+                            path="/faculty/analytics"
+                            element={<FacultyAnalytics />}
+                        />
+                    </Route>
 
                 </Route>
 
